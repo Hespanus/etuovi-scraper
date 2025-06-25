@@ -1,0 +1,16 @@
+# Python virtual environment
+venv/
+.venv/
+env/
+
+# Pythons specific files
+__pycache__/
+*.pyc
+*.pyd
+*.pyo
+*.egg-info/
+.pytest_cache/
+
+# Operating system files
+
+Thumbs.db # Windows
