@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  # Palvelin, joka ajaa scraperia
+  scraper-service:
+    build: ./scraper
+    container_name: scraper-container
+    ports:
+      - "5001:5001"
+    environment:
+      # Tämän avulla voit testata scraperia suoraan, jos haluat
+      - SCRAPER_SERVICE_URL=http://localhost:5001
+
+  # Palvelin, joka toimii välikätenä frontendin ja scraperin välillä
+  api-service:
+    build: ./api
+    container_name: api-container
+    ports:
+      - "5000:5000"
+    environment:
+      # Asetetaan scraperin URL-osoite, joka on nyt docker-compose-verkon sisällä
+      - SCRAPER_SERVICE_URL=http://scraper-service:5001
+
+  # Nginx-kontti, joka tarjoilee staattista HTML/CSS/JS-tiedostoa
+  web-service:
+    build: ./web
+    container_name: web-container
+    ports:
+      - "80:80"

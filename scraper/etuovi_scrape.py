@@ -1,20 +1,29 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.service import Service as ChromeService
-from webdriver_manager.chrome import ChromeDriverManager
+# Remove ChromeService and ChromeDriverManager
+# from selenium.webdriver.chrome.service import Service as ChromeService
+# from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
-import time # Tarvitaan odotteluun, esim. sivun latautumista varten
+import time 
 
 # --- 1. Selenium-WebDriverin alustus ---
 # Käytä webdriver_manageria asentamaan ja hallitsemaan Chromedriveria automaattisesti
 # Jos haluat Firefoxin, käytä FirefoxService ja GeckoDriverManager
 def run_scraper(url):
     try:
-        service = ChromeService(ChromeDriverManager().install())
-        driver = webdriver.Chrome(service=service)
-        print("WebDriver initialized successfully.")
-    
+        # Use ChromeOptions to enable headless mode, which is important for Docker
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
 
+        # Create a new WebDriver session without a service object
+        # It will automatically find the pre-installed driver.
+        driver = webdriver.Chrome(options=chrome_options)
+        
+        print("WebDriver initialized successfully.")
+        print(f"Navigating to: {url}")
         # --- 2. Navigointi sivulle ja JavaScript-sisällön latauksen odottaminen ---
         
         print(f"Navigating to: {url}")
