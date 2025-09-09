@@ -1,5 +1,5 @@
 # Käytä virallista Selenium-kuvaa, jossa on Chrome valmiiksi asennettuna
-FROM selenium/standalone-chrome:latest
+FROM docker.io/selenium/standalone-chrome:latest
 
 # Aseta työhakemisto
 WORKDIR /app
@@ -7,8 +7,14 @@ WORKDIR /app
 # Kopioi tarvittavat Python-riippuvuudet
 COPY requirements.txt .
 
+# Varmista, että pip asennetaan root-käyttäjänä
+USER root
+
 # Asenna Python-riippuvuudet
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Palauta alkuperäinen käyttäjä, jos haluat ajaa sovelluksen ei-root-käyttäjänä
+USER seluser
 
 # Kopioi Python-tiedostot sovellukseen
 COPY . .

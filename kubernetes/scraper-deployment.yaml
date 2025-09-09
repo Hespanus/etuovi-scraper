@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scraper-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: scraper-app
+  template:
+    metadata:
+      labels:
+        app: scraper-app
+    spec:
+      containers:
+      - name: scraper-container
+        image: localhost:32000/scrapingtest-scraper-service:latest
+        ports:
+        - containerPort: 5000
