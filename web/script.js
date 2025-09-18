@@ -16,42 +16,45 @@ document.addEventListener('DOMContentLoaded', () => {
         resultsContainer.innerHTML = ''; // Tyhjennetään aiemmat tulokset
 
         try {
-            const response = await fetch('http://localhost:5000/trigger-scraper', {
+            const response = await fetch('/api/trigger-scraper', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ url: url }),
             });
             
-            const scrapedData = await response.json();
-            console.log(`scraped: ${scrapedData}`);
+            // TÄMÄ ON DEBUGGAUSVAIHE: Tarkistetaan mitä palvelin lähetti takaisin
+            const rawResponse = await response.clone().text();
+            //console.log("Palvelimen raaka vastaus:", rawResponse);
 
-            if (response.ok) {
-                // Tässä voit lisätä tarkistuksen, onko scraperissa virheitä
-                if (scrapedData.error) {
-                    statusDiv.textContent = `Virhe: ${scrapedData.error}`;
-                } else if (Array.isArray(scrapedData) && scrapedData.length > 0) {
-                    statusDiv.textContent = 'Skrappaaja valmis. Tässä tulokset:';
-                    
-                    scrapedData.forEach(item => {
-                        const apartmentDiv = document.createElement('div');
-                        apartmentDiv.className = 'apartment-listing';
-                        // HUOM: Muutettu avaimet vastaamaan scraperin palauttamaa dataa
-                        apartmentDiv.innerHTML = `
-                            <h4>${item.Address}</h4>
-                            <p><strong>Hinta:</strong> ${item.Price}</p>
-                            <p><a href="${item.Link}" target="_blank">Katso ilmoitus</a></p>
-                        `;
-                        resultsContainer.appendChild(apartmentDiv);
-                    });
-                } else {
-                    statusDiv.textContent = 'Ei ilmoituksia tällä hakuehdolla tai skrappaaja palautti virheen.';
-                }
+            if (!response.ok) {
+                // Jos vastaus on epäonnistunut (esim. HTTP 500), heitetään virhe
+                // Virheilmoitukseen lisätään palvelimen raaka vastaus.
+                throw new Error(`HTTP-virhe: ${response.status}. Palvelin palautti epämuotoista dataa: ${rawResponse}`);
+            }
+
+            const scrapedData = await response.json();
+            //console.log(`scraped:`, scrapedData);
+
+            if (Array.isArray(scrapedData) && scrapedData.length > 0) {
+                statusDiv.textContent = 'Skrappaaja valmis. Tässä tulokset:';
+                
+                scrapedData.forEach(item => {
+                    const apartmentDiv = document.createElement('div');
+                    apartmentDiv.className = 'apartment-listing';
+                    // HUOM: Muutettu avaimet vastaamaan scraperin palauttamaa dataa
+                    apartmentDiv.innerHTML = `
+                        <h4>${item.Address}</h4>
+                        <p><strong>Hinta:</strong> ${item.Price}</p>
+                        <p><a href="${item.Link}" target="_blank">Katso ilmoitus</a></p>
+                    `;
+                    resultsContainer.appendChild(apartmentDiv);
+                });
             } else {
-                statusDiv.textContent = `Virhe: ${scrapedData.error || 'Tuntematon virhe'}`;
+                statusDiv.textContent = 'Ei ilmoituksia tällä hakuehdolla tai skrappaaja palautti virheen.';
             }
         } catch (error) {
             console.error('Virhe pyynnössä:', error);
-            statusDiv.textContent = `Virhe: Ei voitu yhdistää palvelimeen.`;
+            statusDiv.textContent = `Virhe: ${error.message || 'Tuntematon virhe'}`;
         }
     });
 });
