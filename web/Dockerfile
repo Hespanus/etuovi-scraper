@@ -1,25 +1,18 @@
-# Käytä virallista Nginx-kuvaa pohjana
+# Käytä virallista Nginx-kuvaa, joka on pieni ja nopea
 FROM docker.io/nginx:1.21.6-alpine
 
-# Asenna Python 3 ja pip
-RUN apk add --no-cache python3 py3-pip
+# Kopioi HTML-, CSS- ja JS-tiedostot Nginxin oletushakemistoon
+# Oletan, että nämä tiedostot ovat samassa hakemistossa kuin Dockerfile
+COPY index.html /usr/share/nginx/html/index.html
+COPY style.css /usr/share/nginx/html/style.css
+COPY script.js /usr/share/nginx/html/script.js
 
-# Asenna Python-kirjastot
-RUN pip install flask requests gunicorn flask_cors python-dotenv
+# Korvataan Nginxin oletuskonfiguraatio, jotta voidaan palvella tiedostoja
+# HUOM: Tässä EI OLE ENÄÄ proxya, koska se siirtyy Kubernetes Ingressiin!
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Aseta työhakemisto
-WORKDIR /usr/share/nginx/html
+# Nginx kuuntelee oletuksena porttia 80
+EXPOSE 80
 
-# Kopioi proxy-sovellus kansioon
-COPY ./proxy_api.py /app/proxy_api.py
-
-# Aseta nginx-konfiguraatio
-COPY ./nginx.conf /etc/nginx/conf.d/default.conf
-
-# Kopioi HTML-, CSS- ja JS-tiedostot
-COPY ./index.html ./
-COPY ./script.js ./
-COPY ./style.css ./
-
-# Oletuskomento, joka käynnistää Gunicornin ja Nginxin taustalla
-CMD python3 /app/proxy_api.py & nginx -g 'daemon off;'
+# Oletuskomento käynnistää Nginxin
+CMD ["nginx", "-g", "daemon off;"]

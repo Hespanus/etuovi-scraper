@@ -1,0 +1,32 @@
+# Tämä Ingress-resurssi ohjaa ulkoisen liikenteen oikeisiin palveluihin.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: main-ingress
+  annotations:
+    # Käytämme Nginx-Ingress-kontrolleria, joka on tyypillinen DO:ssa.
+    # Huom: DO:n uudemmissa klustereissa tämä ingressClassname riittää.
+    kubernetes.io/ingress.class: nginx 
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      # 1. Reititys API-palveluun
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            # api-service on nimi sille Kubernetes Service -resurssille, joka on main-haarassa.
+            name: api-service
+            port:
+              number: 5001 # Oletetaan, että API-konttisi kuuntelee porttia 5001.
+      # 2. Reititys Web-palveluun (oletusreitti)
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            # web-service on nimi sille Kubernetes Service -resurssille, joka on main-haarassa.
+            name: web-service
+            port:
+              number: 80 # Oletetaan, että web-konttisi kuuntelee porttia 80.

@@ -5,18 +5,16 @@ FROM python:3.9-slim
 WORKDIR /app
 
 # Kopioi vaaditut Python-riippuvuudet
-# Huom: Tässä käytämme samaa parasta käytäntöä kuin scraperin kanssa
 COPY requirements.txt .
 
 # Asenna Python-riippuvuudet
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Kopioi Python-tiedostot sovellukseen
-COPY . .
+# Kopioi Python-tiedostot sovellukseen (api.py)
+COPY api.py .
 
 # Paljasta portti, jossa sovellus kuuntelee
 EXPOSE 5000
 
-# Määrittele komento, joka ajetaan kun kontti käynnistyy
-# Huom: app.py käynnistää Flask-sovelluksen
+# Määrittele komento, joka ajetaan kun kontti käynnistyy (API)
 CMD ["python", "api.py"]
