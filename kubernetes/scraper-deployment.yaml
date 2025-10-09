@@ -13,7 +13,7 @@ spec:
         app: scraper-app
     spec:
       containers:
-      - name: scraper-container
-        image: localhost:32000/scrapingtest-scraper-service:latest
+      - name: scraper-container        
+        image: registry.digitalocean.com/heikkiregistry/app:clean-start
         ports:
-        - containerPort: 5000
+        - containerPort: 5001

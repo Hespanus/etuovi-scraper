@@ -10,6 +10,7 @@ COPY script.js /usr/share/nginx/html/script.js
 # Korvataan Nginxin oletuskonfiguraatio, jotta voidaan palvella tiedostoja
 # HUOM: Tässä EI OLE ENÄÄ proxya, koska se siirtyy Kubernetes Ingressiin!
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+RUN chown -R nginx:nginx /usr/share/nginx/html && chmod -R 755 /usr/share/nginx/html
 
 # Nginx kuuntelee oletuksena porttia 80
 EXPOSE 80

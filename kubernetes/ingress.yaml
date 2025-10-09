@@ -1,32 +1,36 @@
-# Tämä Ingress-resurssi ohjaa ulkoisen liikenteen oikeisiin palveluihin.
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: main-ingress
+  name: scraper-ingress
   annotations:
-    # Käytämme Nginx-Ingress-kontrolleria, joka on tyypillinen DO:ssa.
-    # Huom: DO:n uudemmissa klustereissa tämä ingressClassname riittää.
-    kubernetes.io/ingress.class: nginx 
+    # Pakottaa Ingressin päivittämään, mutta ei ratkaise Content-Type-ongelmaa yksinään.
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "false" 
+    
+    # KRIITTINEN RIVI: Tämä annotaatio pakottaa Ingress-kontrollerin Nginx-instanssin
+    # käsittelemään tiedostojen MIME-tyypit dynaamisesti (käyttäen Podin sisäisiä sääntöjä)
+    # sen sijaan, että se käyttäisi omia, mahdollisesti virheellisiä, oletuksiaan.
+    nginx.ingress.kubernetes.io/enable-mime-types: "true" 
+    
+    # Rewrite target poistaa /api-etuliitteen ennen kuin se välitetään api-service:lle.
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   ingressClassName: nginx
   rules:
   - http:
       paths:
-      # 1. Reititys API-palveluun
-      - path: /api
-        pathType: Prefix
+      # Reititys API-palveluun: /api(/|$)(.*) -> /$2
+      - path: /api(/|$)(.*)
+        pathType: ImplementationSpecific
         backend:
           service:
-            # api-service on nimi sille Kubernetes Service -resurssille, joka on main-haarassa.
             name: api-service
             port:
-              number: 5001 # Oletetaan, että API-konttisi kuuntelee porttia 5001.
-      # 2. Reititys Web-palveluun (oletusreitti)
+              number: 5000
+      # Oletusreitti Web-palveluun: /
       - path: /
         pathType: Prefix
         backend:
           service:
-            # web-service on nimi sille Kubernetes Service -resurssille, joka on main-haarassa.
             name: web-service
             port:
-              number: 80 # Oletetaan, että web-konttisi kuuntelee porttia 80.
+              number: 80

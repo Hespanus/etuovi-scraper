@@ -24,13 +24,18 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // TÄMÄ ON DEBUGGAUSVAIHE: Tarkistetaan mitä palvelin lähetti takaisin
             const rawResponse = await response.clone().text();
-            //console.log("Palvelimen raaka vastaus:", rawResponse);
+            console.log("Palvelimen raaka vastaus:", rawResponse);
 
             if (!response.ok) {
-                // Jos vastaus on epäonnistunut (esim. HTTP 500), heitetään virhe
-                // Virheilmoitukseen lisätään palvelimen raaka vastaus.
+            // Jos API palauttaa virheen (esim. 500), yritetään näyttää se
+            try {
+                const errorData = JSON.parse(rawResponse);
+                throw new Error(errorData.error || `HTTP-virhe: ${response.status} (${errorData.message || 'Tuntematon virhe API:ssa'})`);
+            } catch (e) {
+                // Jos vastaus ei ollut JSON, näytetään raaka teksti.
                 throw new Error(`HTTP-virhe: ${response.status}. Palvelin palautti epämuotoista dataa: ${rawResponse}`);
             }
+        }
 
             const scrapedData = await response.json();
             //console.log(`scraped:`, scrapedData);
